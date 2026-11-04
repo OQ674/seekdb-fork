@@ -19,6 +19,7 @@
 #include "ob_string_diff_decoder.h"
 
 #include "ob_raw_decoder.h"
+#include "ob_string_diff_common.h"
 
 namespace oceanbase
 {
@@ -165,6 +166,8 @@ int ObStringDiffDecoder::batch_decode(
     if (OB_FAIL(ret)) {
     } else if (OB_ISNULL(buf = static_cast<char *>(ctx.allocator_->alloc(buf_size * row_cap)))) {
       ret = OB_ALLOCATE_MEMORY_FAILED;
+    } else if (string_size <= min_buf_size) {
+      copy_string_diff_common_batch(*header_, buf, buf_size, row_cap);
     } else {
       for (int64_t i = 0; i < row_cap; ++i) {
         header_->copy_string(ObStringDiffHeader::LeftToRight(), std::logical_not<uint8_t>(),
