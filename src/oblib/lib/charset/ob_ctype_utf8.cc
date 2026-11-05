@@ -377,6 +377,12 @@ static int ob_strnncollsp_utf8mb4(const ObCharsetInfo *cs,
                        const unsigned char *dst, size_t dstlen,
                        bool diff_if_only_endspace_difference)
 {
+  // Repeated full-text terms compare equal frequently while sorting index rows.
+  // Identical byte strings are equal under every collation state, including
+  // invalid UTF-8 fallback and either trailing-space mode.
+  if (srclen == dstlen && (src == dst || 0 == srclen || 0 == memcmp(src, dst, srclen))) {
+    return 0;
+  }
   int res;
   ob_wc_t src_wc = 0, dst_wc = 0;
   const unsigned char *se= src + srclen, *te= dst + dstlen;
